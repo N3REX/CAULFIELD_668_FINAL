@@ -58,7 +58,7 @@ bowtie2-build contofint.fa contofint
 ```
 Here we map our forward and reverse reads to the index, producing a .sam file. This process took the longest for me to run. 
 ```
-bowtie2 -x contofint -1 18894_nh_1.fastq -2 18894_nh_r2.fastq -S 18894.sam
+bowtie2 -x contofint -1 18894_nh_1.fastq -2 18894_nh_2.fastq -S 18894.sam
 ```
 Conversion of the sam to bam, then sorting/indexing the bam. Though the sorting step here can take a while, after this we are good to move onto the Anvi'o profile!
 ```
