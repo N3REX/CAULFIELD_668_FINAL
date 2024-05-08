@@ -1,6 +1,6 @@
 # CAULFIELD_668_FINAL
 
-My final project is the usage of Anvi’o in order to visualize and try to track changes in select contigs across metagenome time series. These metagenomic paired end reads were taken from a Crohn's disease patient before, during and on the downtrend of a disease flareup. This is known via the level of calprotectin in the fecal samples, which is indicative of how much neutrophils are in the gut at the time (i.e. the immune response). Our time points in order are represented by the file names **18894** (before), **19027** (during), and **19029** (after).
+My final project is the usage of Anvi’o in order to visualize and try to track changes in select contigs across metagenome time series. These metagenomic paired end reads were taken from a Crohn's disease patient before, during and on the downtrend of a flareup. This is known via the level of calprotectin in the fecal samples, which is indicative of how much neutrophils are in the gut at the time (i.e. the immune response). Our time points in order are represented by the file names **18894** (before), **19027** (during), and **19029** (after).
 
 The contigs we're interested in are viruses pulled from anaerobic bateria that Cole was able to incubate. Frankly since things are still being figured out outside of this class final project, I and the other people in my lab aren't completely sure of the big picture yet, including these lil' guys.
 
