@@ -1,33 +1,33 @@
 # CAULFIELD_668_FINAL
 
-My final project is the usage of Anvi’o in order to visualize and try to track changes in select contigs across metagenome time series. These metagenomic paired end reads were taken from a Crohn's disease patient before, during and on the downtrend of a flareup. This is known to us by the level of calprotectin in the fecal samples, which is indicative of how much neutrophils are in the gut at the time (i.e. the immune response). Our time points in order are represented by the file names **18894** (before), **19027** (during), and **19029** (after).
+My final project is the usage of Anvi’o in order to visualize and try to track changes in select contigs across metagenome time series. These metagenomic paired-end reads were taken from a Crohn's disease patient before, during and after a flareup. This is known to us by the level of calprotectin in the fecal samples, which is indicative of how much neutrophils are in the gut at the time (i.e. the immune response). Our time points are represented in order by the file names **18894** (before), **19027** (during), and **19029** (after).
 
 The contigs we're interested in are viruses pulled from anaerobic bateria that Cole was able to incubate. Frankly since things are still being figured out outside of this class final project, I and the other people in my lab aren't completely sure of the big picture yet, including these lil' guys.
 
 For this pipeline/workflow you'll need two things:
 
-Your contig(s) of interest: in this case ```sussytigs.fasta``` 
+1. Your contig(s) of interest: In this case ```sussytigs.fasta``` has all of them compacted into one file.
 
-Your reads: ```X_R1.fastq``` and ```X_R2.fastq``` 
+2. Your paired-end reads: ```X_R1.fastq``` and ```X_R2.fastq``` (X being  your filenames)
 
 
 
 ## On Anvi'o and Docker
-You'll be working inside the directory where you park your datafiles (make sure you have space since these take up ~150GB alone, and some later generated files are also huge). You do not need to use Docker like I am in this walkthrough/pseudo-tutorial , but **if you're using an Apple computer with an M1/M2 chip, you will not be able to download all the needed dependencies**. You can download/install Anvi'o [here](https://anvio.org/install/)- the official spelling/use of anvi'o is with a lowercase "a" which throws me off, so I'll be ignoring it. 
-The program is well made and has a [pretty helpful github page where people Q&A for issues they find](https://github.com/merenlab/anvio/issues/). My only issue with the program is that it occasionally uses late 2000s/early 2010s internet lingo in it's readouts which can be very cringy and infuriating when you've been trying to troubleshoot a command that isn't working and you're working off of  ```':3 Oopsies, I has an error```.
+You'll be working inside the directory where you park your datafiles (make sure you have space since these take up ~150GB alone, and some later generated files are also huge). You do not need to use Docker like I am in this walkthrough/pseudo-tutorial, but **if you're using an Apple computer with an M1/M2 chip, you will not be able to download all the needed dependencies**. You can download/install Anvi'o [here](https://anvio.org/install/)- the official spelling/use of anvi'o is with a lowercase "a" which throws me off, so I'll be ignoring it. 
+The program is well made and has a [pretty helpful github page where people Q&A for issues they find](https://github.com/merenlab/anvio/issues/). The only thing counting against the program for me is that it occasionally uses late 2000s/early 2010s internet lingo in it's readouts, which can be very cringy and infuriating when you've been trying to troubleshoot a command that isn't working and you're working off of  ```':3 Oopsies, I has an error```.
 
 Docker is pretty neat since it's essentially a VM which doesn't emulate hardware, and for a lot of programs like this and QIIME, you can just download a container that has everything you need.
 
 ### Docker Installation
-You'll first need to [install docker](https://www.docker.com/get-started/), which is free (as long as you aren't making like 20 million USD a year or something). Once you have it installed, and have it running, go to your command line. This first command will pull the container onto your local machine, and will eat up 15GB of space, which is chump-change for what we're doing.
+You'll first need to [install docker](https://www.docker.com/get-started/), which is free (as long as you aren't making like 20 million USD a year or something). Once you have it installed, and have it running, go to your command line. This first command will pull the container onto your local machine, and will eat up 15GB of space, which is chump-change for what we'll be doing later.
 ```
 docker pull meren/anvio:7
 ```
-Then you can run the container- this script will run it in the current working directory/
+Then you can run the container- this script will run it in the current working directory.
 ```
 docker run --rm -it -v `pwd`:`pwd` -w `pwd` -p 8080:8080 meren/anvio:7
 ```
-If you need to restart/reopen the docker container in your terminal, you can navigate to the docker desktop app and use either of the following commands (the top one you'd use the container's ID code, and the bottom the weird name that gets generated for the container.
+If you need to restart/reopen the docker container in your terminal, you can navigate to the docker desktop app and use either of the following commands (the top one you'd use the container's ID code, and the bottom the weird name that gets generated for the container).
 ```
 docker restart c19224c72a3a 
 docker exec -ti tender_northcutt sh
@@ -35,11 +35,11 @@ docker exec -ti tender_northcutt sh
 
 ## Contigs
 
-First we need to do a little prepwork with our contigs of interest. This first command will essentially clean up our fasta files into something we can work with (unique identifiers and the removal of any weird things that my interfere). Do note that complex headers ***are*** something that I ran into issues with, something I'll touch on again.
+First we need to do a little prepwork with our contigs of interest. This first command will essentially clean up our fasta files into something we can work with (unique identifiers and the removal of any weird things that may interfere). Do note that complex headers ***are*** something that I ran into issues with, which is something I'll touch on again later.
 ```
 anvi-script-reformat-fasta sussytigs.fasta -o contig-fixed.fa -l 0 
 ```
-This is an optional step I kept in so I could easily grab a ```contigs.fa``` and know I had the file which is transformed into ```contigs.db```.
+This is an optional step I kept in so I could easily grab a ```contigs.fa``` and know I had the file which was transformed into ```contigs.db```.
 ```
 mv contig-fixed.fa contigs.fa
 ```
@@ -51,7 +51,7 @@ anvi-gen-contigs-database -f contigs.fa -o contigs.db -n 'Suspect contigs databa
 
 ## Prepping the metagenome
 
-Now we move onto the bulk of the pipeline- these steps will take a while if you're not on a nice setup. The first step is making an index using our contigs to allign our reads to. This ```contofint.fa``` file is essentially ```contigs.fa``` but but with the headers cut down; for example, ```>phi119.2contig2 length=13894nt depth=0.29x``` was shifted to just ```>phi119.2contig2```. This was done to satisfy some header issue that was popping up with Bowtie2.
+Now we move onto the bulk of the pipeline- these steps will take a while if you're not using a nice setup. The first step is making an index using our contigs to allign our reads to. This ```contofint.fa``` file is essentially ```contigs.fa``` but but with the headers cut down; for example, ```>phi119.2contig2 length=13894nt depth=0.29x``` was shifted to just ```>phi119.2contig2```. This was done to satisfy some header issues that were popping up with Bowtie2.
 
 ```
 bowtie2-build contofint.fa contofint
@@ -82,9 +82,9 @@ anvi-interactive -p 18894_sussytig/PROFILE.db -c contigs.db
 
 ### Repeating for the other two time points
 
-During the flare-up. We get to reuse ```contigs.db``` but still need to make new sam/bam and profiles.
+During the flare-up. We get to reuse ```contigs.db``` but still need to make new a sam/bam and profile.
 ```
-bowtie2 -x contofint -1 19027_nh.1.fastq -2 19027_nh.2.fastq -S 19027.sam 
+bowtie2 -x contofint -1 19027_nh_1.fastq -2 19027_nh_2.fastq -S 19027.sam 
 samtools view -b -o 19027.bam 19027.sam 
 samtools sort -o 19027_sort.bam 19027.bam 
 samtools index 19027_sort.bam
@@ -107,4 +107,4 @@ When you open up the server link provided to you, you should see an interface wi
 ![Modified screenshot of 19029's anvi'o with the mouse tab for each contig displayed.](https://github.com/N3REX/CAULFIELD_668_FINAL/blob/main/anvint_19029_v1.png)
 
 ### Things of interest
-In the first time point we see Phi119.2 Contig 2 being the most detected contig with a mere 23%- this number would jump up along with the other contigs during the flare up, with Phi29E2.1 Contig 3 having as high as 48%. These numbers are pretty great for viral genes, but the real stand-out result we see is in 19029 *after the flareup*. Phi29E1.1 Contig 2, which up until after the flare-up had a detection of zero, explodes to a detection of **98%**. Its something incredibly interesting and is something I plan on looking into further to explore why we see this really outlying result. So far I've done a little conserved domain searching and found that this contig has an unusual N<sub>2</sub>0 reductase, but I'm still looking into it.
+In the first time point we see Phi119.2 Contig 2 as the most detected contig with a mere 23%- this number would jump up along with the other contigs during the flare up, with Phi29E2.1 Contig 3 having as high as 48%. These numbers are pretty great for viral genes, but the real stand-out result we see is in 19029 *after the flareup*. Phi29E1.1 Contig 2, which up until after the flare-up had a detection of zero, explodes to a detection of **98%**. It is something incredibly interesting and something I plan on looking into further to explore why we see this really outlying result. So far I've done a little conserved domain searching and found that this contig has an unusual N<sub>2</sub>0 reductase, but I'm still actively looking into things.
