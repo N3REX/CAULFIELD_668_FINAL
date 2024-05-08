@@ -32,7 +32,7 @@ docker restart c19224c72a3a
 docker exec -ti tender_northcutt sh
 ```
 
-### Contigs
+## Contigs
 
 First we need to do a little prepwork with our contigs of interest. This first command will essentially clean up our fasta files into something we can work with (unique identifiers and the removal of any weird things that my interfere). Do note that complex headers ***are*** something that I ran into issues with, something I'll touch on again.
 ```
@@ -48,7 +48,7 @@ anvi-gen-contigs-database -f contigs.fa -o contigs.db -n 'Suspect contigs databa
 ```
 
 
-### Prepping the metagenome
+## Prepping the metagenome
 
 Now we move onto the bulk of the pipeline- these steps will take a while if you're not on a nice setup. The first step is making an index using our contigs to allign our reads to. This ```contofint.fa``` file is essentially ```contigs.fa``` but but with the headers cut down; for example, ```>phi119.2contig2 length=13894nt depth=0.29x``` was shifted to just ```>phi119.2contig2```. This was done to satisfy some header issue that was popping up with Bowtie2.
 
@@ -67,7 +67,7 @@ samtools index 18894_sort.bam
 ```
 
 
-### The Whole Enchilada
+## The Whole Enchilada
 Now onto the main course, Anvi'o itself. We'll use that ```_.bam``` file from earlier, and the ```contigs.db``` from the start to create a profile. The ```--cluster-contigs``` flag is "optional" in that you can either specify it here as I'm doing or use another flag on the actual ```anvi-interactive``` to force it. It's required to make the phylogenetic tree bit of your visualization so if you don't do either of these then you'll get an error.
 ```
 anvi-profile -i 18894_sort.bam -c contigs.db -o 18894_sussytig --cluster-contigs
@@ -99,4 +99,4 @@ samtools index 19029_sort.bam
 anvi-profile -i 19029_sort.bam -c contigs.db -o 19029_sussytig --cluster-contigs
 anvi-interactive -p 19029_sussytig/PROFILE.db -c contigs.db
 ```
-
+## So what does it mean?
